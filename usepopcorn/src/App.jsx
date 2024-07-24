@@ -276,6 +276,18 @@ function MovieDetails({ movieId, closeMovieDetails, onAddNewMovie, watched }) {
     closeMovieDetails();
   };
 
+  const handleESCKey = (e) => {
+    if (e.key === "Escape") closeMovieDetails();
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleESCKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleESCKey);
+    };
+  }, []);
+
   useEffect(() => {
     if (title) document.title = `Movie | ${title}`;
 
