@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorage } from "./useLocalStorageState";
+import { useKeyPress } from "./useKeyPress";
 
 const average = (arr) =>
   arr.reduce((acc, cur, _, arr) => acc + cur / arr.length, 0);
@@ -255,17 +256,7 @@ function MovieDetails({ movieId, closeMovieDetails, onAddNewMovie, watched }) {
     closeMovieDetails();
   };
 
-  const handleESCKey = (e) => {
-    if (e.key === "Escape") closeMovieDetails();
-  };
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleESCKey);
-
-    return () => {
-      document.removeEventListener("keydown", handleESCKey);
-    };
-  }, []);
+  useKeyPress("Escape", closeMovieDetails);
 
   useEffect(() => {
     if (title) document.title = `Movie | ${title}`;
