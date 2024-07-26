@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 
 const average = (arr) =>
@@ -7,9 +7,12 @@ const average = (arr) =>
 const KEY = "93a5fb3b";
 
 export default function App() {
-  const [query, setQuery] = useState("inside");
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(() => {
+    const storedItems = localStorage.getItem("watched");
+    return storedItems ? JSON.parse(storedItems) : [];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -73,6 +76,10 @@ export default function App() {
       controller.abort();
     };
   }, [query]);
+
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
 
   return (
     <>
@@ -148,6 +155,24 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  const inputEl = useRef(null);
+
+  useEffect(() => {
+    inputEl.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    function callback(e) {
+      if (e.key === "Enter") inputEl.current?.focus();
+    }
+
+    document.addEventListener("keypress", callback);
+
+    return () => {
+      document.removeEventListener("keypress", callback);
+    };
+  }, []);
+
   return (
     <input
       className="search"
@@ -155,6 +180,7 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
