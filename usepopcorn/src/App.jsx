@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovies";
 
 const average = (arr) =>
   arr.reduce((acc, cur, _, arr) => acc + cur / arr.length, 0);
@@ -7,15 +8,13 @@ const average = (arr) =>
 const KEY = "93a5fb3b";
 
 export default function App() {
-  const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(() => {
     const storedItems = localStorage.getItem("watched");
     return storedItems ? JSON.parse(storedItems) : [];
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const { movies, isLoading, error } = useMovies(query);
 
   const handleSetSelectedMovie = (id) => {
     setSelectedMovie((prevId) => (prevId == id ? null : id));
@@ -37,46 +36,6 @@ export default function App() {
       watched.filter((mov) => mov.imdbID !== deletedMovie.imdbID),
     );
   };
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchMovies() {
-      try {
-        setError("");
-        setIsLoading(true);
-        const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-          { signal: controller.signal },
-        );
-
-        if (!res.ok) throw new Error("failed to fetch movies");
-
-        const data = await res.json();
-
-        if (data.Response === "False") throw new Error("No movies found");
-
-        setMovies(data.Search);
-      } catch (err) {
-        if (err.name !== "AbortError") setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (query.length < 3) {
-      setError("");
-      setMovies([]);
-      return;
-    }
-
-    fetchMovies();
-
-    return () => {
-      controller.abort();
-    };
-  }, [query]);
-
   useEffect(() => {
     localStorage.setItem("watched", JSON.stringify(watched));
   }, [watched]);
